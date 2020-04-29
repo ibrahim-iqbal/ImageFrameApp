@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
@@ -15,7 +14,8 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -24,7 +24,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,14 +38,13 @@ public class MainActivity extends AppCompatActivity {
 	final int RC_AUDIO = 124;
 	String[] perms = { Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE };
 	ImageView base, fr, gallery;
-	ByteArrayOutputStream baos;
 	AlertDialog alertDialog;
-	Button select, save;
-	Bitmap bitmap, bit;
+	ImageButton delete, save;
+	Bitmap bitmap;
 	Canvas canvas;
-	String text;
+	FrameLayout frameOuter;
 	Handler h;
-	byte[] b;
+	int n = 0;
 
 	@SuppressLint( "ClickableViewAccessibility" )
 	@Override
@@ -56,50 +54,58 @@ public class MainActivity extends AppCompatActivity {
 
 		methodRequiresTwoPermission( );
 		base = findViewById( R.id.base );
-		select = findViewById( R.id.select );
+		delete = findViewById( R.id.delete );
 		save = findViewById( R.id.save );
+		frameOuter = findViewById( R.id.frameOuter );
 		fr = findViewById( R.id.fr );
 		h = new Handler( );
 
-		bitmap = BitmapFactory.decodeResource( getResources( ), R.drawable.frame_1 );
-
-		select.setOnClickListener( new View.OnClickListener( ) {
+		delete.setOnClickListener( new View.OnClickListener( ) {
 			@Override
 			public void onClick( View v13 ) {
-				save.animate( ).alpha( 1f ).setDuration( 500 );
-				AlertDialog.Builder ld = new AlertDialog.Builder( Objects.requireNonNull( MainActivity.this ) );
-				LayoutInflater inflater1 = MainActivity.this.getLayoutInflater( );
-				@SuppressLint( "InflateParams" )
-				View dialogView = inflater1.inflate( R.layout.custom_img, null );
-				ld.setView( dialogView );
-				alertDialog = ld.create( );
-				alertDialog.show( );
-				gallery = alertDialog.findViewById( R.id.gallery );
-
-				assert gallery != null;
-				gallery.setOnClickListener( new View.OnClickListener( ) {
-					@Override
-					public void onClick( View v1 ) {
-						Intent it = new Intent( Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI );
-						Log.d( "MainActivity", "Gallery Loaded ." );
-						Toast.makeText( MainActivity.this, "Gallery Selected" + bitmap, Toast.LENGTH_SHORT ).show( );
-						MainActivity.this.startActivityForResult( it, 1 );
-					}
-				} );
-
+				base.setImageDrawable( getResources( ).getDrawable( R.drawable.ic_add_black_24dp ) );
+				n = 0;
 			}
 		} );
 
-		base.setOnTouchListener( new Touch( this ) );
+		base.setOnClickListener( new View.OnClickListener( ) {
+			@Override
+			public void onClick( View v ) {
+				if (n == 0) {
+					save.animate( ).alpha( 1f ).setDuration( 500 );
+					AlertDialog.Builder ld = new AlertDialog.Builder( Objects.requireNonNull( MainActivity.this ) );
+					LayoutInflater inflater1 = MainActivity.this.getLayoutInflater( );
+					@SuppressLint( "InflateParams" )
+					View dialogView = inflater1.inflate( R.layout.custom_img, null );
+					ld.setView( dialogView );
+					alertDialog = ld.create( );
+					alertDialog.show( );
+					gallery = alertDialog.findViewById( R.id.gallery );
+
+					assert gallery != null;
+					gallery.setOnClickListener( new View.OnClickListener( ) {
+						@Override
+						public void onClick( View v1 ) {
+							Intent it = new Intent( Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI );
+							Log.d( "MainActivity", "Gallery Loaded ." );
+							Toast.makeText( MainActivity.this, "Gallery Selected" + bitmap, Toast.LENGTH_SHORT ).show( );
+							MainActivity.this.startActivityForResult( it, 1 );
+							n++;
+						}
+					} );
+				} else {
+					base.setOnTouchListener( new Touch( MainActivity.this ) );
+				}
+			}
+		} );
 
 		save.setOnClickListener( new View.OnClickListener( ) {
 			@Override
 			public void onClick( View v ) {
-				bit = bitmap.copy( Bitmap.Config.ARGB_8888, true );
-				canvas = new Canvas( bit );
+				Bitmap bitf = viewToBitmap( frameOuter );
 				Log.d( "MainActivity", "Canvas Size" + canvas );
 				Toast.makeText( MainActivity.this, "Save Selected", Toast.LENGTH_SHORT ).show( );
-				MainActivity.this.SaveImage( );
+				MainActivity.this.SaveImage( bitf );
 			}
 		} );
 	}
@@ -121,19 +127,14 @@ public class MainActivity extends AppCompatActivity {
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 
-//	public void setText( ) {
-//		Toast.makeText( this, "Text from Box : " + text, Toast.LENGTH_SHORT ).show( );
-//		Log.d( "MainActivity", "Text to Show : " + text );
-//		Paint paint = new Paint( );
-//		paint.setStyle( Paint.Style.FILL );
-//		paint.setColor( getResources( ).getColor( android.R.color.white ) );
-//		paint.setTextSize( 20 );
-//		paint.setStrokeWidth( 10 );
-//		canvas.drawText( " " + text, 15, bitmap.getHeight( ) - 10, paint );
-//		base.setImageBitmap( bitmap );
-//	}
+	public Bitmap viewToBitmap( View view ) {
+		bitmap = Bitmap.createBitmap( view.getWidth( ), view.getHeight( ), Bitmap.Config.ARGB_8888 );
+		Canvas canvas = new Canvas( bitmap );
+		view.draw( canvas );
+		return bitmap;
+	}
 
-	private void SaveImage( ) {
+	private void SaveImage( Bitmap bit ) {
 		String root = Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_PICTURES ).toString( );
 		File myDir = new File( root + "/saved" );
 		myDir.mkdirs( );
