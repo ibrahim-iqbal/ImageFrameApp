@@ -2,8 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:gravity="center"
+	android:background="#1C111111"
     android:orientation="horizontal">
 
     <ImageView
@@ -11,7 +12,7 @@
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:src="@drawable/ic_collections_black_24dp"
-        android:tint="#FF4949"
+        android:tint="#5DC3FF"
         tools:ignore="ContentDescription" />
 
 

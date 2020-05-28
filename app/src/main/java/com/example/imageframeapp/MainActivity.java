@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,9 +42,10 @@ public class MainActivity extends AppCompatActivity {
 	AlertDialog alertDialog;
 	ImageButton delete, save;
 	Bitmap bitmap;
-	Canvas canvas;
 	FrameLayout frameOuter;
 	Handler h;
+	FragmentAdapter fragmentAdapter;
+	ViewPager viewPager;
 	int n = 0;
 
 	@SuppressLint( "ClickableViewAccessibility" )
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
 		setContentView( R.layout.activity_main );
 
 		methodRequiresTwoPermission( );
+
 		base = findViewById( R.id.base );
 		delete = findViewById( R.id.delete );
 		save = findViewById( R.id.save );
@@ -60,51 +63,59 @@ public class MainActivity extends AppCompatActivity {
 		fr = findViewById( R.id.fr );
 		h = new Handler( );
 
+		viewPager = findViewById( R.id.viewpager );
+		fragmentAdapter = new FragmentAdapter( getSupportFragmentManager( ) );
+		viewPager.setAdapter( fragmentAdapter );
+
 		delete.setOnClickListener( new View.OnClickListener( ) {
 			@Override
 			public void onClick( View v13 ) {
 				base.setImageDrawable( getResources( ).getDrawable( R.drawable.ic_add_black_24dp ) );
+				base.setCropToPadding( true );
+				base.setScaleType( ImageView.ScaleType.CENTER_CROP );
 				n = 0;
 			}
 		} );
 
-		base.setOnClickListener( new View.OnClickListener( ) {
-			@Override
-			public void onClick( View v ) {
-				if (n == 0) {
-					save.animate( ).alpha( 1f ).setDuration( 500 );
-					AlertDialog.Builder ld = new AlertDialog.Builder( Objects.requireNonNull( MainActivity.this ) );
-					LayoutInflater inflater1 = MainActivity.this.getLayoutInflater( );
-					@SuppressLint( "InflateParams" )
-					View dialogView = inflater1.inflate( R.layout.custom_img, null );
-					ld.setView( dialogView );
-					alertDialog = ld.create( );
-					alertDialog.show( );
-					gallery = alertDialog.findViewById( R.id.gallery );
-
-					assert gallery != null;
-					gallery.setOnClickListener( new View.OnClickListener( ) {
-						@Override
-						public void onClick( View v1 ) {
-							Intent it = new Intent( Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI );
-							Log.d( "MainActivity", "Gallery Loaded ." );
-							Toast.makeText( MainActivity.this, "Gallery Selected" + bitmap, Toast.LENGTH_SHORT ).show( );
-							MainActivity.this.startActivityForResult( it, 1 );
-							n++;
-						}
-					} );
-				} else {
-					base.setOnTouchListener( new Touch( MainActivity.this ) );
-				}
-			}
-		} );
+//		base.setOnClickListener( new View.OnClickListener( ) {
+//			@Override
+//			public void onClick( View v ) {
+//				if (n == 0) {
+//					save.animate( ).alpha( 1f ).setDuration( 500 );
+//					AlertDialog.Builder ld = new AlertDialog.Builder( Objects.requireNonNull( MainActivity.this ) );
+//					LayoutInflater inflater1 = MainActivity.this.getLayoutInflater( );
+//					@SuppressLint( "InflateParams" )
+//					View dialogView = inflater1.inflate( R.layout.custom_img, null );
+//					ld.setView( dialogView );
+//					alertDialog = ld.create( );
+//					alertDialog.show( );
+//					gallery = alertDialog.findViewById( R.id.gallery );
+//
+//					assert gallery != null;
+//					gallery.setOnClickListener( new View.OnClickListener( ) {
+//						@Override
+//						public void onClick( View v1 ) {
+//							Intent it = new Intent( Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI );
+//							Log.d( "MainActivity", "Gallery Loaded ." );
+//							Toast.makeText( MainActivity.this, "Gallery Selected" + bitmap, Toast.LENGTH_SHORT ).show( );
+//							MainActivity.this.startActivityForResult( it, 1 );
+//							n++;
+//						}
+//					} );
+//				} else {
+//					base.setOnTouchListener( new Touch( MainActivity.this ) );
+//				}
+//			}
+//		} );
 
 		save.setOnClickListener( new View.OnClickListener( ) {
 			@Override
 			public void onClick( View v ) {
+				AlertDialog alertDialog = new AlertDialog.Builder( MainActivity.this ).create( );
+				alertDialog.setTitle( "Alert Dialog" );
+				alertDialog.show( );
+
 				Bitmap bitf = viewToBitmap( frameOuter );
-				Log.d( "MainActivity", "Canvas Size" + canvas );
-				Toast.makeText( MainActivity.this, "Save Selected", Toast.LENGTH_SHORT ).show( );
 				MainActivity.this.SaveImage( bitf );
 			}
 		} );
@@ -142,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
 		int n = 100;
 		Random generator = new Random( );
 		n = generator.nextInt( n );
-		String fname = "Image-" + n + ".jpg";
+		String fname = "IMG-" + n + ".jpg";
 		Log.d( "MainActivity", "File name : " + fname );
 		File file = new File( myDir, fname );
 		if (file.exists( )) file.delete( );

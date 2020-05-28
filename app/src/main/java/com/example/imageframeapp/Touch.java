@@ -98,9 +98,9 @@ class Touch implements View.OnTouchListener {
 					}
 					if (lastEvent != null) {
 						double newRot = rotation( event );
-						Log.v( "Degreeeeeeeeeee ", "newRot= : " + ( newRot ) );
+						Log.v( "Degree ", "newRot= : " + ( newRot ) );
 						double r = newRot - d;
-						Log.v( "Degreeeeeeeeeee ", "rotate :: " + r );
+						Log.v( "Degree ", "rotate :: " + r );
 						matrix.postRotate( ( float ) r, v.getMeasuredWidth( ) / 2, v.getMeasuredHeight( ) / 2 );
 					}
 				}

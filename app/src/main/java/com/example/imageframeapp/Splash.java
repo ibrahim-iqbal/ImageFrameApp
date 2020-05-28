@@ -17,7 +17,7 @@ public class Splash extends AppCompatActivity {
 		setContentView( R.layout.activity_splash );
 
 		sp = findViewById( R.id.sp );
-		sp.animate( ).scaleX( 1.8f ).scaleY( 1.8f ).setDuration( 1000 );
+		sp.animate( ).scaleX( 5.4f ).scaleY( 5.4f ).setDuration( 1000 );
 
 		h.postDelayed( new Runnable( ) {
 			@Override
